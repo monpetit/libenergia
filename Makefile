@@ -19,7 +19,10 @@ ENERGIA_ROOT = ./libenergia
 CMSIS = ${ENERGIA_ROOT}/cmsis
 CMSIS_BOOT = ${ENERGIA_ROOT}/cmsis_boot
 ENERGIA_LIBDIR = ${ENERGIA_ROOT}/energia
-CMSIS_OS = ${ENERGIA_ROOT}/cmsis_os
+
+LIBLARIES_ROOT = ./libraries
+CMSIS_OS = ${LIBLARIES_ROOT}/cmsis_os
+FREERTOS = ${LIBLARIES_ROOT}/FreeRTOS
 
 LIBSRCS = \
 	${CMSIS_BOOT}/system_LM4F.c \
@@ -100,6 +103,20 @@ LIBSRCS = \
 #	${ENERGIA_LIBDIR}/HardwareSerial6.cpp \
 #	${ENERGIA_LIBDIR}/HardwareSerial7.cpp \
 
+#
+# FREERTOS
+#
+LIBSRCS += \
+	${FREERTOS}/EnergiaFreeRTOS.cpp \
+	${FREERTOS}/utility/croutine.c \
+	${FREERTOS}/utility/list.c \
+	${FREERTOS}/utility/queue.c \
+	${FREERTOS}/utility/tasks.c \
+	${FREERTOS}/utility/timers.c \
+	${FREERTOS}/utility/portable/GCC/ARM_CM4F/port.c \
+	${FREERTOS}/utility/portable/MemMang/heap_2.c
+
+
 __LIBSRCS = ${LIBSRCS:.s=.o}
 _LIBSRCS = ${__LIBSRCS:.c=.o}
 LIBOBJS = ${_LIBSRCS:.cpp=.o}
@@ -118,7 +135,8 @@ DEPS = ${OBJS:.o=.d}
 LDSCRIPT = ${CMSIS_BOOT}/gcc_arm.ld
 
 
-INCLUDEPATH = -I./apps -I${ENERGIA_LIBDIR} -I${CMSIS} -I${CMSIS_BOOT} -I${CMSIS_OS}
+INCLUDEPATH = -I./apps -I${ENERGIA_LIBDIR} -I${CMSIS} -I${CMSIS_BOOT} -I${CMSIS_OS} \
+	-I${FREERTOS} -I${FREERTOS}/utility/include
 
 DEFS = -DPART_LM4F120H5QR \
        -DF_CPU=80000000L \
@@ -195,7 +213,7 @@ ${LIBENERGIA}: ${LIBOBJS}
 	$(foreach lobj,${LIBOBJS},${AR} rcs "$@" ${lobj};)
 
 clean:
-	rm -f ${TARGET} ${TARGET}.bin ${TARGET}.map ${OBJS} ${DEPS} ${TARGET}.lst ${LIBOBJS} ${LIBDEPS}
+	rm -f ${TARGET} ${TARGET}.bin ${TARGET}.map ${OBJS} ${DEPS} ${TARGET}.lst ${LIBOBJS} ${LIBDEPS} ${LIBENERGIA}
 
 install: ${TARGET}.bin
 	lm4flash "$<"
