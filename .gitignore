@@ -63,3 +63,5 @@ dmake
 .project
 .settings
 BACKUP
+apps/main.cpp
+
