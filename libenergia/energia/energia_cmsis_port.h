@@ -48,6 +48,11 @@
 
 	#define WatchdogIntHandler    __cs3_isr_watchdog
 	#define Timer5IntHandler      __cs3_isr_TIMER5A
+
+	#define I2C0_Handler          __cs3_isr_i2c0
+	#define I2C1_Handler          __cs3_isr_i2c1
+	#define I2C2_Handler          __cs3_isr_I2C2
+	#define I2C3_Handler          __cs3_isr_I2C3
 #else
 #endif
 

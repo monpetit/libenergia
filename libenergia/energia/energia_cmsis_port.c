@@ -1,7 +1,11 @@
 #include "energia_cmsis_port.h"
 #include <stdio.h>
 
+/*
+ * create some overridable default signal handlers
+ */
 __attribute__((weak)) void I2CIntHandler(void) {}
+
 
 void I2C0_Handler(void)
 {
