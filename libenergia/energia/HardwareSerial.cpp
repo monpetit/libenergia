@@ -48,6 +48,12 @@
 #include "driverlib/uart.h"
 #include "HardwareSerial.h"
 
+#ifdef DEBUG
+void __error__(char *pcFilename, unsigned long ulLine)
+{
+}
+#endif
+
 #define TX_BUFFER_EMPTY    (txReadIndex == txWriteIndex)
 #define TX_BUFFER_FULL     (((txWriteIndex + 1) % SERIAL_BUFFER_SIZE) == txReadIndex)
 
