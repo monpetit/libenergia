@@ -23,6 +23,7 @@ ENERGIA_LIBDIR = ${ENERGIA_ROOT}/energia
 LIBLARIES_ROOT = ./libraries
 CMSIS_OS = ${LIBLARIES_ROOT}/cmsis_os
 FREERTOS = ${LIBLARIES_ROOT}/FreeRTOS
+COOS = ${LIBLARIES_ROOT}/CoOS
 
 LIBSRCS = \
 	${CMSIS_BOOT}/system_LM4F.c \
@@ -73,6 +74,7 @@ LIBSRCS = \
 	${ENERGIA_LIBDIR}/driverlib/udma.c \
 	${ENERGIA_LIBDIR}/driverlib/usb.c \
 	${ENERGIA_LIBDIR}/driverlib/watchdog.c \
+	${ENERGIA_LIBDIR}/debug.c \
 	${ENERGIA_LIBDIR}/energia_cmsis_port.c \
 	${ENERGIA_LIBDIR}/itoa.c \
 	${ENERGIA_LIBDIR}/lm4f_rtc.c \
@@ -116,6 +118,13 @@ LIBSRCS += \
 	${FREERTOS}/utility/portable/GCC/ARM_CM4F/port.c \
 	${FREERTOS}/utility/portable/MemMang/heap_2.c
 
+#
+# COOS
+#
+LIBSRCS += $(shell ls ${COOS}/kernel/*.c) \
+	${COOS}/portable/arch.c \
+	${COOS}/portable/GCC/port.c
+
 
 __LIBSRCS = ${LIBSRCS:.s=.o}
 _LIBSRCS = ${__LIBSRCS:.c=.o}
@@ -136,7 +145,8 @@ LDSCRIPT = ${CMSIS_BOOT}/gcc_arm.ld
 
 
 INCLUDEPATH = -I./apps -I${ENERGIA_LIBDIR} -I${CMSIS} -I${CMSIS_BOOT} -I${CMSIS_OS} \
-	-I${FREERTOS} -I${FREERTOS}/utility/include
+	-I${FREERTOS} -I${FREERTOS}/utility/include \
+	-I${COOS}/kernel -I${COOS}/portable
 
 DEFS = -DPART_LM4F120H5QR \
        -DF_CPU=80000000L \
@@ -145,7 +155,7 @@ DEFS = -DPART_LM4F120H5QR \
        -DTARGET_IS_BLIZZARD_RA2 \
        -D__CMSIS_RTOS \
        -D__CORTEX_M4F \
-       -D__FPU_PRESENT \
+       -D__FPU_PRESENT=1 \
        -D__VFP_FP__
 
 CFLAGS = -c \
@@ -156,7 +166,6 @@ CFLAGS = -c \
 	 -fdata-sections \
 	 -fsingle-precision-constant \
 	 -fno-common \
-	 -DNDEBUG \
 	 -MMD \
 	 -MP \
 	 -mcpu=cortex-m4 \
@@ -164,6 +173,12 @@ CFLAGS = -c \
 	 -mthumb \
 	 -mfloat-abi=hard \
 	 -mfpu=fpv4-sp-d16
+
+ifdef DEBUG
+CFLAGS+=-g3 -DDEBUG
+else
+CFLAGS+=-DNDEBUG
+endif
 
 CXXFLAGS = ${CFLAGS} \
 	   -fno-rtti \
@@ -187,6 +202,8 @@ ASFLAGS = -c \
 
 
 LIBS = -lenergia
+#-larm_cortexM4lf_math -lgcc -lc -lm
+
 LIBPATH = -L.
 LDFLAGS = -T ${LDSCRIPT} \
 	  -Wl,--gc-sections \
