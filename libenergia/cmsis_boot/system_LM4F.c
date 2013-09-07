@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 #include "LM4F120H5QR.h"
+#include "inc/hw_types.h"
+#include "inc/hw_nvic.h"
 
 
 /*----------------------------------------------------------------------------
@@ -585,10 +587,37 @@ void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
  * @brief  Setup the microcontroller system.
  *         Initialize the System.
  */
+
+extern void (*__preinit_array_start[])(void);
+extern void (*__preinit_array_end[])(void);
+extern void (*__init_array_start[])(void);
+extern void (*__init_array_end[])(void);
+
 void SystemInit (void)
 {
+    uint32_t i, cnt;
+
+    //
+    // Enable the floating-point unit before calling c++ ctors
+    //
+
+    HWREG(NVIC_CPAC) = ((HWREG(NVIC_CPAC) &
+                         ~(NVIC_CPAC_CP10_M | NVIC_CPAC_CP11_M)) |
+                         NVIC_CPAC_CP10_FULL | NVIC_CPAC_CP11_FULL);
+
+    //
+    // call any global c++ ctors
+    //
+    cnt = __preinit_array_end - __preinit_array_start;
+    for (i = 0; i < cnt; i++)
+        __preinit_array_start[i]();
+
+    cnt = __init_array_end - __init_array_start;
+    for (i = 0; i < cnt; i++)
+        __init_array_start[i]();
+
+
 #if(CLOCK_SETUP)
-    uint32_t i;
 
     SYSCTL->RCC2 = 0x07802810;    /* set default value */
     SYSCTL->RCC  = 0x078E3AD1;    /* set default value */
