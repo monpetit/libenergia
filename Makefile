@@ -7,7 +7,7 @@ AR = ${CPREF}-ar
 LD = ${CPREF}-ld
 NM = ${CPREF}-nm
 OBJCOPY = ${CPREF}-objcopy
-OBJDUMP = ${CPREF}-objdump  
+OBJDUMP = ${CPREF}-objdump
 READELF = ${CPREF}-readelf
 SIZE    = ${CPREF}-size
 
@@ -24,56 +24,12 @@ LIBLARIES_ROOT = ./libraries
 CMSIS_OS = ${LIBLARIES_ROOT}/cmsis_os
 FREERTOS = ${LIBLARIES_ROOT}/FreeRTOS
 COOS = ${LIBLARIES_ROOT}/CoOS
+CHIBIOS = ${LIBLARIES_ROOT}/ChibiOS
 
 LIBSRCS = \
 	${CMSIS_BOOT}/system_LM4F.c \
 	${CMSIS_BOOT}/startup_LM4F_GCC.s \
-	${CMSIS_OS}/HAL_CM4.s \
-	${CMSIS_OS}/SVC_Table.s \
-	${CMSIS_OS}/HAL_CM.c \
-	${CMSIS_OS}/RTX_Conf_CM.c \
-	${CMSIS_OS}/rt_CMSIS.c \
-	${CMSIS_OS}/rt_Event.c \
-	${CMSIS_OS}/rt_List.c \
-	${CMSIS_OS}/rt_Mailbox.c \
-	${CMSIS_OS}/rt_MemBox.c \
-	${CMSIS_OS}/rt_Memory.c \
-	${CMSIS_OS}/rt_Mutex.c \
-	${CMSIS_OS}/rt_Robin.c \
-	${CMSIS_OS}/rt_Semaphore.c \
-	${CMSIS_OS}/rt_System.c \
-	${CMSIS_OS}/rt_Task.c \
-	${CMSIS_OS}/rt_Time.c \
-	${CMSIS_OS}/rt_Timer.c \
-	${ENERGIA_LIBDIR}/driverlib/adc.c \
-	${ENERGIA_LIBDIR}/driverlib/can.c \
-	${ENERGIA_LIBDIR}/driverlib/comp.c \
-	${ENERGIA_LIBDIR}/driverlib/cpu.c \
-	${ENERGIA_LIBDIR}/driverlib/eeprom.c \
-	${ENERGIA_LIBDIR}/driverlib/epi.c \
-	${ENERGIA_LIBDIR}/driverlib/ethernet.c \
-	${ENERGIA_LIBDIR}/driverlib/fan.c \
-	${ENERGIA_LIBDIR}/driverlib/flash.c \
-	${ENERGIA_LIBDIR}/driverlib/fpu.c \
-	${ENERGIA_LIBDIR}/driverlib/gpio.c \
-	${ENERGIA_LIBDIR}/driverlib/hibernate.c \
-	${ENERGIA_LIBDIR}/driverlib/i2c.c \
-	${ENERGIA_LIBDIR}/driverlib/i2s.c \
-	${ENERGIA_LIBDIR}/driverlib/interrupt.c \
-	${ENERGIA_LIBDIR}/driverlib/lpc.c \
-	${ENERGIA_LIBDIR}/driverlib/mpu.c \
-	${ENERGIA_LIBDIR}/driverlib/peci.c \
-	${ENERGIA_LIBDIR}/driverlib/pwm.c \
-	${ENERGIA_LIBDIR}/driverlib/qei.c \
-	${ENERGIA_LIBDIR}/driverlib/ssi.c \
-	${ENERGIA_LIBDIR}/driverlib/sysctl.c \
-	${ENERGIA_LIBDIR}/driverlib/sysexc.c \
-	${ENERGIA_LIBDIR}/driverlib/systick.c \
-	${ENERGIA_LIBDIR}/driverlib/timer.c \
-	${ENERGIA_LIBDIR}/driverlib/uart.c \
-	${ENERGIA_LIBDIR}/driverlib/udma.c \
-	${ENERGIA_LIBDIR}/driverlib/usb.c \
-	${ENERGIA_LIBDIR}/driverlib/watchdog.c \
+	$(shell ls ${ENERGIA_LIBDIR}/driverlib/*.c) \
 	${ENERGIA_LIBDIR}/debug.c \
 	${ENERGIA_LIBDIR}/energia_cmsis_port.c \
 	${ENERGIA_LIBDIR}/itoa.c \
@@ -96,7 +52,7 @@ LIBSRCS = \
 	${ENERGIA_LIBDIR}/Tone.cpp \
 	${ENERGIA_LIBDIR}/wdog.cpp \
 	${ENERGIA_LIBDIR}/WMath.cpp \
-	${ENERGIA_LIBDIR}/WString.cpp 
+	${ENERGIA_LIBDIR}/WString.cpp
 
 #	${ENERGIA_LIBDIR}/HardwareSerial2.cpp \
 #	${ENERGIA_LIBDIR}/HardwareSerial3.cpp \
@@ -105,10 +61,45 @@ LIBSRCS = \
 #	${ENERGIA_LIBDIR}/HardwareSerial6.cpp \
 #	${ENERGIA_LIBDIR}/HardwareSerial7.cpp \
 
+__LIBSRCS = ${LIBSRCS:.s=.o}
+_LIBSRCS = ${__LIBSRCS:.c=.o}
+LIBOBJS = ${_LIBSRCS:.cpp=.o}
+LIBDEPS = ${LIBOBJS:.o=.d}
+
+
+#
+# KEIL RTX
+#
+LIBRTX = librtx.a
+RTX_SRCS = \
+	${CMSIS_OS}/HAL_CM4.s \
+	${CMSIS_OS}/SVC_Table.s \
+	${CMSIS_OS}/HAL_CM.c \
+	${CMSIS_OS}/RTX_Conf_CM.c \
+	${CMSIS_OS}/rt_CMSIS.c \
+	${CMSIS_OS}/rt_Event.c \
+	${CMSIS_OS}/rt_List.c \
+	${CMSIS_OS}/rt_Mailbox.c \
+	${CMSIS_OS}/rt_MemBox.c \
+	${CMSIS_OS}/rt_Memory.c \
+	${CMSIS_OS}/rt_Mutex.c \
+	${CMSIS_OS}/rt_Robin.c \
+	${CMSIS_OS}/rt_Semaphore.c \
+	${CMSIS_OS}/rt_System.c \
+	${CMSIS_OS}/rt_Task.c \
+	${CMSIS_OS}/rt_Time.c \
+	${CMSIS_OS}/rt_Timer.c
+
+_RTX_OBJS = ${RTX_SRCS:.s=.o}
+RTX_OBJS = ${_RTX_OBJS:.c=.o}
+RTX_DEPS = ${RTX_OBJS:.o=.d}
+
+
 #
 # FREERTOS
 #
-LIBSRCS += \
+LIBFREERTOS = libfreertos.a
+FR_SRCS = \
 	${FREERTOS}/EnergiaFreeRTOS.cpp \
 	${FREERTOS}/utility/croutine.c \
 	${FREERTOS}/utility/list.c \
@@ -118,18 +109,30 @@ LIBSRCS += \
 	${FREERTOS}/utility/portable/GCC/ARM_CM4F/port.c \
 	${FREERTOS}/utility/portable/MemMang/heap_2.c
 
+_FR_SRCS = ${FR_SRCS:.c=.o}
+FR_OBJS = ${_FR_SRCS:.cpp=.o}
+FR_DEPS = ${FR_OBJS:.o=.d}
+
+
 #
 # COOS
 #
-LIBSRCS += $(shell ls ${COOS}/kernel/*.c) \
+LIBCOOS = libcoos.a
+CO_SRCS = $(shell ls ${COOS}/kernel/*.c) \
 	${COOS}/portable/arch.c \
 	${COOS}/portable/GCC/port.c
 
+CO_OBJS = ${CO_SRCS:.c=.o}
+CO_DEPS = ${CO_OBJS:.o=.d}
 
-__LIBSRCS = ${LIBSRCS:.s=.o}
-_LIBSRCS = ${__LIBSRCS:.c=.o}
-LIBOBJS = ${_LIBSRCS:.cpp=.o}
-LIBDEPS = ${LIBOBJS:.o=.d}	
+
+#
+# CHIBIOS
+#
+#LIBSRCS += $(shell ls ${CHIBIOS}/utility/*.c) \
+#	${CHIBIOS}/ChibiOS_ARM.c
+
+
 
 
 SRCS = \
@@ -138,7 +141,8 @@ SRCS = \
 __SRCS = ${SRCS:.s=.o}
 _SRCS = ${__SRCS:.c=.o}
 OBJS = ${_SRCS:.cpp=.o}
-DEPS = ${OBJS:.o=.d}	
+DEPS = ${OBJS:.o=.d}
+
 
 
 LDSCRIPT = ${CMSIS_BOOT}/gcc_arm.ld
@@ -146,7 +150,8 @@ LDSCRIPT = ${CMSIS_BOOT}/gcc_arm.ld
 
 INCLUDEPATH = -I./apps -I${ENERGIA_LIBDIR} -I${CMSIS} -I${CMSIS_BOOT} -I${CMSIS_OS} \
 	-I${FREERTOS} -I${FREERTOS}/utility/include \
-	-I${COOS}/kernel -I${COOS}/portable
+	-I${COOS}/kernel -I${COOS}/portable \
+#	-I${CHIBIOS} -I${CHIBIOS}/utility
 
 DEFS = -DPART_LM4F120H5QR \
        -DF_CPU=80000000L \
@@ -176,8 +181,10 @@ CFLAGS = -c \
 
 ifdef DEBUG
 CFLAGS+=-g3 -DDEBUG
+CXXFLAGS+=-g3 -DDEBUG
 else
 CFLAGS+=-DNDEBUG
+CXXFLAGS+=-DNDEBUG
 endif
 
 CXXFLAGS = ${CFLAGS} \
@@ -192,16 +199,16 @@ ASFLAGS = -c \
 	-mfpu=fpv4-sp-d16
 
 %.o: %.c
-	${CC} ${CFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<" 
+	${CC} ${CFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<"
 
 %.o: %.cpp
-	${CXX} ${CXXFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<" 
+	${CXX} ${CXXFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<"
 
 %.o: %.s
-	${AS} ${ASFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<" 
+	${AS} ${ASFLAGS} ${DEFS} ${INCLUDEPATH} -o "$@" "$<"
 
 
-LIBS = -lenergia
+LIBS = -lenergia -lrtx -lfreertos -lcoos
 #-larm_cortexM4lf_math -lgcc -lc -lm
 
 LIBPATH = -L.
@@ -212,13 +219,13 @@ LDFLAGS = -T ${LDSCRIPT} \
 	  -march=armv7e-m \
 	  -mthumb \
 	  -mfloat-abi=hard \
-	  -mfpu=fpv4-sp-d16 
+	  -mfpu=fpv4-sp-d16
 
 
 
-all: ${TARGET}.bin ${LIBENERGIA}
+all: ${TARGET}.bin ${LIBENERGIA} ${LIBRTX} ${LIBFREERTOS} ${LIBCOOS}
 
-${TARGET}.bin: ${OBJS} ${LIBENERGIA}
+${TARGET}.bin: ${OBJS} ${LIBENERGIA} ${LIBRTX} ${LIBFREERTOS} ${LIBCOOS}
 	${CXX} -o ${TARGET} ${OBJS} ${LIBS} ${LIBPATH} ${LDFLAGS}
 	${OBJCOPY} -O binary ${TARGET} "$@"
 	${OBJDUMP} -S ${TARGET} > ${TARGET}.lst
@@ -229,8 +236,23 @@ ${TARGET}.bin: ${OBJS} ${LIBENERGIA}
 ${LIBENERGIA}: ${LIBOBJS}
 	$(foreach lobj,${LIBOBJS},${AR} rcs "$@" ${lobj};)
 
+${LIBRTX}: ${RTX_OBJS}
+	$(foreach lobj,${RTX_OBJS},${AR} rcs "$@" ${lobj};)
+
+${LIBFREERTOS}: ${FR_OBJS}
+	$(foreach lobj,${FR_OBJS},${AR} rcs "$@" ${lobj};)
+
+${LIBCOOS}: ${CO_OBJS}
+	$(foreach lobj,${CO_OBJS},${AR} rcs "$@" ${lobj};)
+
+
+
 clean:
-	rm -f ${TARGET} ${TARGET}.bin ${TARGET}.map ${OBJS} ${DEPS} ${TARGET}.lst ${LIBOBJS} ${LIBDEPS} ${LIBENERGIA}
+	rm -f ${TARGET} ${TARGET}.bin ${TARGET}.map ${OBJS} ${DEPS} ${TARGET}.lst
+	rm -f ${RTX_OBJS} ${RTX_DEPS}
+	rm -f ${FR_OBJS} ${CO_DEPS}
+	rm -f ${CO_OBJS} ${CO_DEPS}
+	rm -f *.a
 
 install: ${TARGET}.bin
 	lm4flash "$<"
